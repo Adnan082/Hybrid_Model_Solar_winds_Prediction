@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data files (too large for git)
+DATA/*.csv
+DATA/*.parquet
+DATA/*.h5
+
+# MLflow
+mlruns/
+
+# Model artifacts
+models/*.pt
+models/*.pkl
+models/*.pth
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Docker
+docker/volumes/
+
+# Secrets
+.env
+config/secrets.yaml

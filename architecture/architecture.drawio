@@ -1,0 +1,328 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="Claude" version="21.0.0">
+  <diagram name="Solar Wind Dst Prediction System" id="solar-wind-arch">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TITLE ===== -->
+        <mxCell id="title" value="Solar Wind Dst Prediction — Multi-Agent System Architecture"
+          style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=17;fontStyle=1;fontColor=#1a1a2e;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="12" width="950" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- ===== DATA SOURCES ===== -->
+        <mxCell id="ds-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=40;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="52" width="950" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="ds-title" value="DATA SOURCES"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontStyle=1;fontColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="30" y="55" width="140" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="noaa" value="&lt;b&gt;NOAA Real-Time API&lt;/b&gt;&#xa;mag-5-minute.json&#xa;plasma-5-minute.json&#xa;polls every 60 s"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="45" y="72" width="155" height="72" as="geometry" />
+        </mxCell>
+
+        <mxCell id="csv-sw" value="&lt;b&gt;solar_wind.csv&lt;/b&gt;&#xa;8 M rows, 1-min&#xa;historical training"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="215" y="72" width="155" height="72" as="geometry" />
+        </mxCell>
+
+        <mxCell id="csv-labels" value="&lt;b&gt;labels.csv&lt;/b&gt;&#xa;actual Dst (hourly)&#xa;ground truth + reward"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="385" y="72" width="155" height="72" as="geometry" />
+        </mxCell>
+
+        <mxCell id="csv-sun" value="&lt;b&gt;sunspots.csv&lt;/b&gt;&#xa;smoothed SSN&#xa;solar cycle context"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="555" y="72" width="155" height="72" as="geometry" />
+        </mxCell>
+
+        <mxCell id="csv-sat" value="&lt;b&gt;satellite_pos.csv&lt;/b&gt;&#xa;ACE / DSCOVR positions&#xa;propagation delay"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="725" y="72" width="230" height="72" as="geometry" />
+        </mxCell>
+
+        <!-- EB1 -->
+        <mxCell id="eb1" value="EVENT BUS (Redis Pub/Sub)   ·   topic: solar_wind.raw"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="188" width="950" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AGENT 1 ===== -->
+        <mxCell id="a1-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;"
+          vertex="1" parent="1">
+          <mxGeometry x="75" y="268" width="800" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="a1-title" value="AGENT 1 — Burton Physics Solver  (no ML training required)"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#b85450;"
+          vertex="1" parent="1">
+          <mxGeometry x="90" y="271" width="560" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1-ode" value="&lt;b&gt;ODE Solver (RK4)&lt;/b&gt;&#xa;dDst/dt = Q(E) − Dst / τ&#xa;Q = −4.4 (E − 0.49)&#xa;τ = 7.7 hrs"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#b85450;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="95" y="295" width="200" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1-out" value="&lt;b&gt;Published outputs:&lt;/b&gt;   Dst_burton(t)   ·   Q(t) ring current injection rate   ·   E(t) solar wind electric field&#xa;dDst_burton/dt rate of change   ·   rolling_error_3hr (how wrong Burton was in last 3 hrs)   ·   storm_phase"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#b85450;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="315" y="295" width="540" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- EB2 -->
+        <mxCell id="eb2" value="EVENT BUS (Redis Pub/Sub)   ·   topic: burton.output"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="430" width="950" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AGENT 2 ===== -->
+        <mxCell id="a2-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="510" width="445" height="178" as="geometry" />
+        </mxCell>
+        <mxCell id="a2-title" value="AGENT 2 — Anomaly Detection (Unsupervised)"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#2d7600;"
+          vertex="1" parent="1">
+          <mxGeometry x="40" y="513" width="400" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a2-model" value="&lt;b&gt;LSTM Autoencoder&lt;/b&gt;&#xa;Unsupervised&#xa;Trained on quiet-period solar wind&#xa;Reconstruction error = anomaly score"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ccff99;strokeColor=#82b366;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="42" y="538" width="200" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a2-io" value="&lt;b&gt;Inputs:&lt;/b&gt;&#xa;raw solar wind: Bz, speed, density, temp&#xa;Q(t), E(t) from Agent 1&#xa;&#xa;&lt;b&gt;Output:&lt;/b&gt; anomaly_score A(t) ∈ [0,1]&#xa;High score = unusual solar wind&#xa;→ Burton likely to fail here"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ccff99;strokeColor=#82b366;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="255" y="536" width="200" height="138" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AGENT 3 ===== -->
+        <mxCell id="a3-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="510" y="510" width="465" height="178" as="geometry" />
+        </mxCell>
+        <mxCell id="a3-title" value="AGENT 3 — Supervised Error Corrector"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#7d4f00;"
+          vertex="1" parent="1">
+          <mxGeometry x="525" y="513" width="420" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a3-model" value="&lt;b&gt;LSTM (seq2seq)&lt;/b&gt;&#xa;Supervised&#xa;Target: dst_actual − dst_burton&#xa;Learns WHERE / HOW Burton fails"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffee99;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="527" y="538" width="210" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a3-io" value="&lt;b&gt;Inputs:&lt;/b&gt;&#xa;Dst_burton, Q(t), E(t), dDst/dt&#xa;rolling_error_3hr, storm_phase&#xa;anomaly_score A(t)&#xa;&#xa;&lt;b&gt;Output:&lt;/b&gt; correction Δ(t)&#xa;Dst_corrected = Dst_burton + Δ(t)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffee99;strokeColor=#d6b656;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="752" y="536" width="208" height="138" as="geometry" />
+        </mxCell>
+
+        <!-- EB3 -->
+        <mxCell id="eb3" value="EVENT BUS (Redis Pub/Sub)   ·   topics: anomaly.output   |   ml.output"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="732" width="950" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AGENT 4 ===== -->
+        <mxCell id="a4-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="25" y="812" width="950" height="205" as="geometry" />
+        </mxCell>
+        <mxCell id="a4-title" value="AGENT 4 — Reinforcement Learning Arbiter  (online learning — adapts live during active storms)"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#00478f;"
+          vertex="1" parent="1">
+          <mxGeometry x="40" y="815" width="870" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a4-state" value="&lt;b&gt;STATE&lt;/b&gt;&#xa;&#xa;Dst_burton(t)&#xa;anomaly_score A(t)&#xa;correction Δ(t)&#xa;storm_phase&#xa;last 6 hr pred errors&#xa;solar wind context"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99ccff;strokeColor=#6c8ebf;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="43" y="840" width="185" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a4-policy" value="&lt;b&gt;POLICY (PPO)&lt;/b&gt;&#xa;&#xa;Learns weights w1, w2, w3&#xa;&#xa;Dst_final = w1 · Dst_burton&#xa;          + w2 · Dst_corrected&#xa;          + w3 · anomaly_adj&#xa;&#xa;quiet  → w1≈1.0, w2≈0&#xa;onset  → w1 drops, w2 rises&#xa;main   → w1≈0,   w2≈1.0"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99ccff;strokeColor=#6c8ebf;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="245" y="840" width="240" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a4-reward" value="&lt;b&gt;REWARD SIGNAL&lt;/b&gt;&#xa;&#xa;Every hour, true Dst arrives:&#xa;reward = −|Dst_final − Dst_actual|&#xa;&#xa;Bonus:   +10 if G-level correct&#xa;Penalty: −20 if extreme storm missed&#xa;&#xa;&lt;b&gt;Agent gets smarter each storm&lt;/b&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99ccff;strokeColor=#6c8ebf;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="505" y="840" width="220" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a4-output" value="&lt;b&gt;OUTPUT&lt;/b&gt;&#xa;&#xa;Dst_final(t)&#xa;confidence score&#xa;storm G-level&#xa;G0 quiet → G5 extreme&#xa;&#xa;weights w1, w2, w3&#xa;(full explainability)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99ccff;strokeColor=#6c8ebf;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="745" y="840" width="210" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- EB4 -->
+        <mxCell id="eb4" value="EVENT BUS (Redis Pub/Sub)   ·   topics: prediction.final   |   alerts.storm"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="125" y="1062" width="700" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- ===== FASTAPI ===== -->
+        <mxCell id="api-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0e6ff;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="125" y="1142" width="280" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="api-title" value="FastAPI Service"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#4d0099;"
+          vertex="1" parent="1">
+          <mxGeometry x="140" y="1145" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="api-detail" value="GET /predict            → Dst_final + confidence&#xa;GET /predict/history    → last N predictions&#xa;GET /storm/alert        → G-level (G0–G5)&#xa;GET /agents/status      → health of all agents&#xa;GET /explain            → w1, w2, w3 weights&#xa;&#xa;WS  /stream             → live push every 1 min"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ccff;strokeColor=#9673a6;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="140" y="1168" width="250" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===== MLOPS ===== -->
+        <mxCell id="mlops-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;"
+          vertex="1" parent="1">
+          <mxGeometry x="430" y="1142" width="295" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="mlops-title" value="MLOps Layer"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#333333;"
+          vertex="1" parent="1">
+          <mxGeometry x="445" y="1145" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="mlops-detail" value="MLflow      model registry, experiment tracking&#xa;Prometheus  latency, RMSE per agent, alert accuracy&#xa;Evidently   data drift on solar wind features&#xa;&#xa;Docker Compose services:&#xa;api  ·  redis  ·  agent-burton&#xa;agent-anomaly  ·  agent-corrector&#xa;agent-arbiter  ·  mlflow  ·  prometheus"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ebebeb;strokeColor=#666666;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="445" y="1168" width="265" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===== TRAINING PIPELINE ===== -->
+        <mxCell id="train-bg" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff0f0;strokeColor=#cc0000;"
+          vertex="1" parent="1">
+          <mxGeometry x="750" y="1142" width="225" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="train-title" value="Offline Training Pipeline"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#cc0000;"
+          vertex="1" parent="1">
+          <mxGeometry x="765" y="1145" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="train-detail" value="1. prepare_data.py&#xa;   Burton ODE on CSV → enriched dataset&#xa;   Compute residual = dst − dst_burton&#xa;&#xa;2. train_anomaly.py  → Agent 2&#xa;   LSTM Autoencoder on quiet windows&#xa;&#xa;3. train_corrector.py → Agent 3&#xa;   LSTM on residual target&#xa;&#xa;4. pretrain_arbiter.py → Agent 4&#xa;   Behavioral cloning warm-start"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6e6;strokeColor=#cc0000;fontSize=10;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="765" y="1168" width="196" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- =================== ARROWS =================== -->
+
+        <!-- Data sources → EB1 (5 straight vertical arrows) -->
+        <mxCell id="e-noaa-eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.102;entryY=0;entryDx=0;entryDy=0;" edge="1" source="noaa" target="eb1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sw-eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.281;entryY=0;entryDx=0;entryDy=0;" edge="1" source="csv-sw" target="eb1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-lbl-eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.460;entryY=0;entryDx=0;entryDy=0;" edge="1" source="csv-labels" target="eb1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sun-eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.639;entryY=0;entryDx=0;entryDy=0;" edge="1" source="csv-sun" target="eb1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sat-eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.868;entryY=0;entryDx=0;entryDy=0;" edge="1" source="csv-sat" target="eb1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB1 → Agent 1 (center straight down) -->
+        <mxCell id="e-eb1-a1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb1" target="a1-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Agent 1 → EB2 (center straight down) -->
+        <mxCell id="e-a1-eb2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="a1-bg" target="eb2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB2 → Agent 2 (exits at 25% → straight down to Agent2 center) -->
+        <mxCell id="e-eb2-a2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0.259;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb2" target="a2-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB2 → Agent 3 (exits at 75% → straight down to Agent3 center) -->
+        <mxCell id="e-eb2-a3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=2;exitX=0.773;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb2" target="a3-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Agent 2 → EB3 (exits bottom center → enters EB3 at 25%) -->
+        <mxCell id="e-a2-eb3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.259;entryY=0;entryDx=0;entryDy=0;" edge="1" source="a2-bg" target="eb3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Agent 3 → EB3 (exits bottom center → enters EB3 at 75%) -->
+        <mxCell id="e-a3-eb3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.773;entryY=0;entryDx=0;entryDy=0;" edge="1" source="a3-bg" target="eb3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB3 → Agent 4 (center straight down) -->
+        <mxCell id="e-eb3-a4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6c8ebf;strokeWidth=3;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb3" target="a4-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Agent 4 → EB4 (center straight down) -->
+        <mxCell id="e-a4-eb4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6c8ebf;strokeWidth=3;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="a4-bg" target="eb4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB4 → FastAPI (exits at 18% → straight down) -->
+        <mxCell id="e-eb4-api" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#9673a6;strokeWidth=2;exitX=0.188;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb4" target="api-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EB4 → MLOps (exits at 58% → straight down) -->
+        <mxCell id="e-eb4-mlops" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#666666;strokeWidth=2;exitX=0.581;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="eb4" target="mlops-bg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Reward feedback: labels.csv → Agent4 (routed along right edge, x=1010) -->
+        <mxCell id="e-reward" value="hourly Dst ground truth (reward signal)"
+          style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#00aa00;strokeWidth=2;dashed=1;fontColor=#00aa00;fontSize=9;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=block;endFill=1;"
+          edge="1" source="csv-labels" target="a4-bg" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1010" y="108" />
+              <mxPoint x="1010" y="914" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
