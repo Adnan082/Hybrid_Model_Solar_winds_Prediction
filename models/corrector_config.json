@@ -1,0 +1,36 @@
+{
+  "input_size": 17,
+  "hidden_size": 128,
+  "num_layers": 2,
+  "dropout": 0.4,
+  "seq_len": 120,
+  "feature_cols": [
+    "bz_gsm",
+    "by_gsm",
+    "bt",
+    "density",
+    "speed",
+    "E_field",
+    "Q",
+    "dst_burton",
+    "dDst_dt",
+    "rolling_error_3h",
+    "bz_gsm_mean_1h",
+    "bz_gsm_std_3h",
+    "speed_mean_3h",
+    "E_field_mean_6h",
+    "storm_phase",
+    "source_encoded",
+    "smoothed_ssn"
+  ],
+  "target_col": "residual",
+  "best_val_loss": 333.36234964643205,
+  "val_rmse_nT": 6.498757839202881,
+  "val_rmse_by_class": {
+    "quiet": 4.910323143005371,
+    "minor": 7.74271821975708,
+    "moderate": 11.83774185180664,
+    "intense": 13.709425926208496,
+    "extreme": 6.498757839202881
+  }
+}

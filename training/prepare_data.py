@@ -248,7 +248,9 @@ def run_burton(df: pd.DataFrame) -> pd.DataFrame:
         sub["storm_phase"] = label_storm_phase(dst_hourly)
 
         # Residual (training target for Agent 3) — only where Dst is available
-        sub["residual"] = (sub["dst"] - sub["dst_burton"]).astype(np.float32)
+        # Use dst_raw to avoid any forward-filled values contaminating the target
+        dst_raw = sub["dst"].where(sub["timedelta"].dt.seconds % 3600 == 0)
+        sub["residual"] = (dst_raw - sub["dst_burton"]).astype(np.float32)
 
         # Storm loss weight
         dst_filled = sub["dst"].ffill(limit=60).fillna(0).values
