@@ -8,7 +8,9 @@ Topics (in order of pipeline flow):
   burton.output    : dst_burton + E_field + Q + dDst_dt (published by Agent 1)
   anomaly.output   : anomaly_score (published by Agent 2)
   ml.output        : residual_pred (published by Agent 3)
-  prediction.final : final Dst prediction (published by Agent 4)
+  prediction.final : final Dst prediction (published by Agent 4 / FusionAgent)
+  rl.reward        : actual Dst observations fed back for RL training
+                     payload: {"dst_actual": float, "period": str, "timedelta": str}
 """
 
 import json
@@ -21,7 +23,9 @@ TOPICS = {
     "burton":    "burton.output",
     "anomaly":   "anomaly.output",
     "ml":        "ml.output",
-    "final":     "prediction.final",
+    "fusion":    "fusion.output",    # merged context from Agent 4 → consumed by Agent 5
+    "final":     "prediction.final", # final blended prediction from Agent 5 (RL)
+    "rl_reward": "rl.reward",        # actual Dst observations → RL training signal
 }
 
 
