@@ -53,6 +53,24 @@ from agents.anomaly_agent import AnomalyAgent
 from agents.corrector_agent import CorrectorAgent
 from agents.fusion_agent import FusionAgent
 from agents.rl_agent import RLBusAgent
+from datetime import datetime, timezone
+
+
+def _history_writer(bus: EventBus, stop_event: threading.Event) -> None:
+    """
+    Subscribes to prediction.final and writes each message into a Redis list
+    (history:prediction.final, capped at 1440 entries = 24 hours at 1-min cadence).
+    Also does the same for fusion.output.
+    """
+    topics = [TOPICS["final"], TOPICS["fusion"]]
+    bus.subscribe(*topics)
+    for channel, payload in bus.listen():
+        if stop_event.is_set():
+            break
+        payload["timestamp"] = datetime.now(timezone.utc).isoformat()
+        hist_key = f"history:{channel}"
+        bus._r.lpush(hist_key, __import__("json").dumps(payload))
+        bus._r.ltrim(hist_key, 0, 1439)
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -223,6 +241,15 @@ def main() -> None:
     _start_agent_thread(CorrectorAgent, main_bus)
     _start_agent_thread(FusionAgent,    main_bus)
     _start_agent_thread(RLBusAgent,     main_bus)
+
+    # History writer: separate bus connection to avoid interfering with agents
+    hist_bus = EventBus(host=redis_host, port=redis_port)
+    hist_thread = threading.Thread(
+        target=_history_writer, args=(hist_bus, stop_event),
+        name="HistoryWriter", daemon=True,
+    )
+    hist_thread.start()
+    logger.info("[main] HistoryWriter thread started.")
 
     # Short pause to let all agents subscribe before the feeder starts sending
     time.sleep(1.0)
