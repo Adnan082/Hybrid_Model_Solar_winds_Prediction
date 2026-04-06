@@ -21,7 +21,7 @@ import numpy as np
 ROOT       = Path(__file__).resolve().parent.parent
 MODELS_DIR = ROOT / "models"
 
-mlflow.set_tracking_uri(str(ROOT / "mlruns"))
+mlflow.set_tracking_uri((ROOT / "mlruns").as_uri())
 
 
 def start_pipeline_run(period: str | None = None) -> mlflow.ActiveRun:
