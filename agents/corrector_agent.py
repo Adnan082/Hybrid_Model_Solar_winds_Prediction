@@ -21,6 +21,7 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import torch
 from loguru import logger
 
@@ -169,7 +170,9 @@ class CorrectorAgent(BaseAgent):
         ]
 
         # ── Scale features ──
-        scaled = self.scaler.transform([feature_vec])[0]
+        scaled = self.scaler.transform(
+            pd.DataFrame([feature_vec], columns=FEATURE_COLS)
+        )[0]
 
         # ── Append to rolling window ──
         self._window.append(scaled)

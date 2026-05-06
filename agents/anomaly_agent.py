@@ -27,6 +27,7 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import torch
 from loguru import logger
 
@@ -122,7 +123,9 @@ class AnomalyAgent(BaseAgent):
         feature_vec = [bz, by, bt, speed, density, E_field, dDst_dt, self._smoothed_ssn]
 
         # ── Scale features ──
-        scaled = self.scaler.transform([feature_vec])[0]
+        scaled = self.scaler.transform(
+            pd.DataFrame([feature_vec], columns=ANOMALY_FEATURES)
+        )[0]
 
         # ── Append to rolling window ──
         self._window.append(scaled)

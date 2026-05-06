@@ -44,11 +44,12 @@ app = dash.Dash(
 
 def _fetch(path: str, params: dict | None = None) -> dict | list | None:
     try:
-        r = httpx.get(f"{API_BASE}{path}", params=params, timeout=2.0)
+        r = httpx.get(f"{API_BASE}{path}", params=params, timeout=4.0)
         if r.status_code == 200:
             return r.json()
-    except Exception:
-        pass
+        print(f"[Dashboard] API {path} returned {r.status_code}: {r.text[:200]}")
+    except Exception as e:
+        print(f"[Dashboard] API {path} failed: {e}")
     return None
 
 
@@ -180,6 +181,12 @@ app.layout = html.Div([
 
     ], style={"padding": "16px"}),
 
+    # ── Debug bar ─────────────────────────────────────────────────────────────
+    html.Div(id="debug-bar", style={
+        "fontSize": "11px", "color": "#4a5568", "padding": "4px 16px",
+        "fontFamily": "Share Tech Mono", "borderTop": "1px solid #1a2d50",
+    }),
+
     # ── Interval timer ────────────────────────────────────────────────────────
     dcc.Interval(id="main-interval", interval=INTERVAL, n_intervals=0),
     dcc.Store(id="store-latest"),
@@ -192,13 +199,19 @@ app.layout = html.Div([
 @app.callback(
     Output("store-latest",  "data"),
     Output("store-history", "data"),
+    Output("debug-bar",     "children"),
     Input("main-interval",  "n_intervals"),
 )
 def fetch_data(_n):
+    from datetime import datetime, timezone
     latest  = _fetch("/api/v1/prediction/latest") or {}
     history = _fetch("/api/v1/history/predictions", {"n": 120})
     points  = history.get("points", []) if history else []
-    return latest, points
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+    api_ok = "API OK" if latest else "API UNREACHABLE"
+    debug = f"[{ts}] {api_ok} | history_points={len(points)} | dst_pred={latest.get('dst_pred','--')}"
+    print(f"[Dashboard] fetch_data n={_n}: {debug}")
+    return latest, points, debug
 
 
 @app.callback(
@@ -264,11 +277,20 @@ def update_header_kpis(latest, _n):
 )
 def update_charts(points):
     pts = points or []
+
+    def safe(fn, label):
+        try:
+            return fn(pts)
+        except Exception as e:
+            print(f"[Dashboard] Chart error in {label}: {e}")
+            import traceback; traceback.print_exc()
+            return _empty(f"Chart error: {e}")
+
     return (
-        build_dst_chart(pts),
-        build_blend_chart(pts),
-        build_solar_wind_chart(pts),
-        build_rl_curve(pts),
+        safe(build_dst_chart,        "dst"),
+        safe(build_blend_chart,      "blend"),
+        safe(build_solar_wind_chart, "solar_wind"),
+        safe(build_rl_curve,         "rl_curve"),
     )
 
 
@@ -335,4 +357,4 @@ def update_breakdown(latest):
 
 if __name__ == "__main__":
     port = int(os.getenv("DASHBOARD_PORT", 8050))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)

@@ -21,16 +21,17 @@ def _parse_history(r: redis.Redis, key: str, n: int) -> HistoryResponse:
         try:
             d = json.loads(raw)
             points.append(HistoryPoint(
-                timestamp     = d.get("timestamp", ""),
-                dst_pred      = float(d.get("dst_pred",      d.get("dst_burton", 0.0))),
-                dst_burton    = float(d.get("dst_burton",    0.0)),
-                dst_corrector = float(d.get("dst_corrector", 0.0)),
-                anomaly_score = float(d.get("anomaly_score", 0.0)),
-                alert_level   = d.get("alert_level", "GREEN"),
-                w_burton      = float(d.get("w_burton",      0.5)),
-                w_corrector   = float(d.get("w_corrector",   0.5)),
-                bz_gsm        = float(d.get("bz_gsm",        0.0)),
-                speed         = float(d.get("speed",       400.0)),
+                timestamp         = d.get("timestamp", ""),
+                dst_pred          = float(d.get("dst_pred",          d.get("dst_burton", 0.0))),
+                dst_burton        = float(d.get("dst_burton",        0.0)),
+                dst_corrector     = float(d.get("dst_corrector",     0.0)),
+                anomaly_score     = float(d.get("anomaly_score",     0.0)),
+                alert_level       = d.get("alert_level", "GREEN"),
+                w_burton          = float(d.get("w_burton",          0.5)),
+                w_corrector       = float(d.get("w_corrector",       0.5)),
+                blend_certainty   = float(d.get("blend_certainty",   0.0)),
+                bz_gsm            = float(d.get("bz_gsm",            0.0)),
+                speed             = float(d.get("speed",           400.0)),
             ))
         except Exception:
             continue

@@ -53,6 +53,7 @@ from agents.anomaly_agent import AnomalyAgent
 from agents.corrector_agent import CorrectorAgent
 from agents.fusion_agent import FusionAgent
 from agents.rl_agent import RLBusAgent
+from live_feeder import LiveFeeder
 from datetime import datetime, timezone
 
 
@@ -204,6 +205,15 @@ def main() -> None:
         "--no-feeder", action="store_true",
         help="Skip the data feeder (use if you have a live Redis feed).",
     )
+    parser.add_argument(
+        "--live", action="store_true",
+        help="Use live NOAA SWPC feed instead of CSV replay.",
+    )
+    parser.add_argument(
+        "--pretrain-live", action="store_true",
+        help="Phase 1: replay all CSV data at full speed to mature the RL agent, "
+             "then automatically switch to the live NOAA feed.",
+    )
     args = parser.parse_args()
 
     # ── Redis connection ──────────────────────────────────────────────────────
@@ -255,7 +265,56 @@ def main() -> None:
     time.sleep(1.0)
 
     # ── Start data feeder ─────────────────────────────────────────────────────
-    if not args.no_feeder:
+    if args.no_feeder:
+        logger.info("[main] --no-feeder set, skipping DataFeeder.")
+        feeder_thread = None
+    elif args.live:
+        logger.info("[main] --live mode: polling NOAA SWPC feeds every 60s.")
+        live = LiveFeeder(main_bus)
+        feeder_thread = threading.Thread(
+            target=live.run,
+            args=(stop_event,),
+            name="LiveFeeder",
+            daemon=True,
+        )
+        feeder_thread.start()
+        logger.info("[main] LiveFeeder thread started.")
+    elif args.pretrain_live:
+        logger.info("[main] --pretrain-live: Phase 1 — replaying CSV at full speed ...")
+        feeder_thread = threading.Thread(
+            target=run_feeder,
+            args=(main_bus, 0.0, args.period, stop_event),
+            name="DataFeeder",
+            daemon=True,
+        )
+        feeder_thread.start()
+        logger.info("[main] DataFeeder thread started — waiting for completion ...")
+
+        # Block until all CSV rows are published (or Ctrl+C)
+        while feeder_thread.is_alive() and not stop_event.is_set():
+            feeder_thread.join(timeout=5.0)
+
+        if stop_event.is_set():
+            logger.info("[main] Shutdown requested during pre-training.")
+        else:
+            logger.info("[main] Phase 1 complete — draining pipeline (30 s) ...")
+            for _ in range(30):
+                if stop_event.is_set():
+                    break
+                time.sleep(1)
+
+            if not stop_event.is_set():
+                logger.info("[main] --pretrain-live: Phase 2 — switching to live NOAA feed.")
+                live = LiveFeeder(main_bus)
+                feeder_thread = threading.Thread(
+                    target=live.run,
+                    args=(stop_event,),
+                    name="LiveFeeder",
+                    daemon=True,
+                )
+                feeder_thread.start()
+                logger.info("[main] LiveFeeder thread started.")
+    else:
         feeder_thread = threading.Thread(
             target=run_feeder,
             args=(main_bus, args.speed, args.period, stop_event),
@@ -264,9 +323,6 @@ def main() -> None:
         )
         feeder_thread.start()
         logger.info("[main] DataFeeder thread started.")
-    else:
-        logger.info("[main] --no-feeder set, skipping DataFeeder.")
-        feeder_thread = None
 
     # ── Keep main thread alive ────────────────────────────────────────────────
     logger.info(

@@ -45,16 +45,17 @@ class AgentStatusResponse(BaseModel):
 
 
 class HistoryPoint(BaseModel):
-    timestamp:     str
-    dst_pred:      float
-    dst_burton:    float
-    dst_corrector: float
-    anomaly_score: float
-    alert_level:   str
-    w_burton:      float
-    w_corrector:   float
-    bz_gsm:        float
-    speed:         float
+    timestamp:       str
+    dst_pred:        float
+    dst_burton:      float
+    dst_corrector:   float
+    anomaly_score:   float
+    alert_level:     str
+    w_burton:        float
+    w_corrector:     float
+    blend_certainty: float = 0.0
+    bz_gsm:          float
+    speed:           float
 
 
 class HistoryResponse(BaseModel):

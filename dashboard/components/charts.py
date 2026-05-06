@@ -16,6 +16,8 @@ _STORM_LINES = [
 ]
 
 
+_AXIS = dict(gridcolor=_GRID, zerolinecolor=_GRID, showgrid=True)
+
 def _base_layout(**kwargs) -> dict:
     return dict(
         paper_bgcolor = _TRANSPARENT,
@@ -24,8 +26,6 @@ def _base_layout(**kwargs) -> dict:
         margin        = dict(l=48, r=16, t=36, b=36),
         legend        = dict(orientation="h", y=1.08, x=0,
                              font=dict(size=10), bgcolor=_TRANSPARENT),
-        xaxis = dict(gridcolor=_GRID, zerolinecolor=_GRID, showgrid=True),
-        yaxis = dict(gridcolor=_GRID, zerolinecolor=_GRID, showgrid=True),
         **kwargs,
     )
 
@@ -71,9 +71,8 @@ def build_dst_chart(points: list[dict]) -> go.Figure:
 
     fig.update_layout(
         **_base_layout(title=dict(text="Dst Prediction", font=dict(size=13, color="#00d4ff"))),
-        yaxis=dict(title="Dst (nT)", autorange="reversed",
-                   gridcolor=_GRID, zerolinecolor=_GRID),
-        xaxis=dict(title="Time", gridcolor=_GRID),
+        yaxis=dict(title="Dst (nT)", autorange="reversed", **_AXIS),
+        xaxis=dict(title="Time", **_AXIS),
         hovermode="x unified",
     )
     return fig
@@ -138,8 +137,8 @@ def build_blend_chart(points: list[dict]) -> go.Figure:
     ))
     fig.update_layout(
         **_base_layout(title=dict(text="RL Blend Weights", font=dict(size=12, color="#00d4ff"))),
-        yaxis=dict(range=[0, 1], tickformat=".0%",
-                   title="Weight", gridcolor=_GRID),
+        yaxis=dict(range=[0, 1], tickformat=".0%", title="Weight", **_AXIS),
+        xaxis=dict(**_AXIS),
         hovermode="x unified",
     )
     return fig
@@ -168,9 +167,10 @@ def build_solar_wind_chart(points: list[dict]) -> go.Figure:
 
     fig.update_layout(
         **_base_layout(title=dict(text="Solar Wind", font=dict(size=12, color="#00d4ff"))),
+        xaxis=dict(**_AXIS),
         hovermode="x unified",
     )
-    fig.update_yaxes(title_text="Bz (nT)",   gridcolor=_GRID, secondary_y=False)
+    fig.update_yaxes(title_text="Bz (nT)",      gridcolor=_GRID, secondary_y=False)
     fig.update_yaxes(title_text="Speed (km/s)", gridcolor=_GRID, secondary_y=True,
                      showgrid=False)
     return fig
@@ -202,8 +202,8 @@ def build_rl_curve(points: list[dict]) -> go.Figure:
     ))
     fig.update_layout(
         **_base_layout(title=dict(text="RL Learning Curve (Blend Certainty)", font=dict(size=12, color="#00d4ff"))),
-        yaxis=dict(range=[0, 1], title="Certainty", gridcolor=_GRID),
-        xaxis=dict(title="Prediction Step", gridcolor=_GRID),
+        yaxis=dict(range=[0, 1], title="Certainty", **_AXIS),
+        xaxis=dict(title="Prediction Step", **_AXIS),
     )
     return fig
 
